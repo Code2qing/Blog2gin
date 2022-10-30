@@ -3,14 +3,10 @@ package controllers
 import (
 	"Blog2Gin/conf"
 	"Blog2Gin/model"
-	"bytes"
 	"fmt"
-	"github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"github.com/yuin/goldmark"
-	highlighting "github.com/yuin/goldmark-highlighting/v2"
-	"github.com/yuin/goldmark/extension"
+	"gitlab.com/golang-commonmark/markdown"
 	"golang.org/x/sync/errgroup"
 	"net/http"
 	"runtime"
@@ -125,25 +121,25 @@ func BlogIndex(c *gin.Context) {
 	blogPosts := blogPostsV.([]*model.BlogPost)
 	start := time.Now()
 	for _, post := range blogPosts {
-		markdown := goldmark.New(
-			// 支持 GFM
-			goldmark.WithExtensions(extension.GFM),
-			goldmark.WithExtensions(
-				highlighting.NewHighlighting(
-					highlighting.WithStyle("monokailight"),
-					highlighting.WithFormatOptions(
-						html.WithLineNumbers(true),
-					),
-				),
-			),
-		)
-		var buf bytes.Buffer
-		if err := markdown.Convert([]byte(post.Excerpt), &buf); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "markdown fail!"})
-		}
-		post.Excerpt = buf.String()
+		//markdown := goldmark.New(
+		//	// 支持 GFM
+		//	goldmark.WithExtensions(extension.GFM),
+		//)
+		//var buf bytes.Buffer
+		//if err := markdown.Convert([]byte(post.Excerpt), &buf); err != nil {
+		//	c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "markdown fail!"})
+		//}
+		//post.Excerpt = buf.String()
+
+		//post.Excerpt = string(github_flavored_markdown.Markdown([]byte(post.Excerpt)))
+
+		//post.Excerpt = string(blackfriday.Run([]byte(post.Excerpt)))
+
+		md := markdown.New(markdown.XHTMLOutput(true))
+		post.Excerpt = md.RenderToString([]byte(post.Excerpt))
+
 	}
-	fmt.Println("exec time is: ", time.Since(start))
+	log.Infof("exec time is: %s", time.Since(start))
 	indexCtx := indexContextData{}
 	indexCtx.BlogPosts = blogPosts
 	indexCtx.MenuHome = true
