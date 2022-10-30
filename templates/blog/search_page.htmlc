@@ -1,0 +1,11 @@
+{% extends 'blog/base1.html' %}
+{% block title %}搜索{% endblock %}
+{% block content%}
+<h1>全站搜索</h1>
+<form action="{% url 'haystack_search' %}" method="GET">
+	{% csrf_token %}
+<span class="search"><input type="text" name="q"  placeholder="请输入关键词"/></span>
+<!--注意以上为文本框设置的placeholder属性，为文本框默认显示的文字-->
+<span class="button"><input type="submit"  value="搜索" /></span>
+</form>
+{% endblock %}

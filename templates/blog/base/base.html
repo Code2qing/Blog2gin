@@ -1,0 +1,264 @@
+<!--{% load static %}-->
+<!--{% load blog_tags %}-->
+<!DOCTYPE html>
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link href="/static/blog/css/jquery.fancybox.min.css" rel="stylesheet" type="text/css">
+
+<link href="//fonts.loli.net/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Rosario:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+<link href="/static/blog/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<link href="/static/blog/css/main.css" rel="stylesheet" type="text/css">
+<link href="/static/blog/css/search.css" rel="stylesheet" type="text/css">
+<style>
+        span.highlighted {
+            color: red;
+        }
+
+</style>
+<link rel="stylesheet" href="/static/blog/css/highlights/github.css"><!-- 代码高亮 -->
+
+<link rel="stylesheet" href="/static/blog/css/comments.css">
+<meta name="keywords" content="Hexo,next">
+<link rel="shortcut icon" type="image/x-icon" href="https://png.icons8.com/color/50/000000/happy.png">
+<meta name="description" content="随风而起">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{block "og_title" .}}Smile2u{{end}}">
+<meta property="og:url" content="">
+<meta property="og:site_name" content="Smile2u">
+<meta property="og:description" content="随风而起">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{{block "twitter_title" .}}Smile2u{{end}}">
+<meta name="twitter:description" content="随风而起">
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+   
+    
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: false,
+    
+    
+  };
+</script>
+<link rel="canonical" href="">
+<title>{{block "title" .}} Smile2U {{end}}</title>
+<style type="text/css">
+.fancybox-margin{margin-right:17px;}
+</style>
+</head>
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+<div class="container sidebar-position-left page-home ">
+  <div class="headband">
+  </div>
+  <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+  <div class="header-inner">
+    <div class="site-brand-wrapper">
+      <div class="site-meta ">
+        <div class="custom-logo-site-title">
+          <a href="{% url 'blog:index' %}" class="brand" rel="start" style="opacity: 1;">
+          <span class="logo-line-before"><i></i></span>
+          <span class="site-title" style="opacity: 1; top: 0px;">Smile 2 U</span>
+          <span class="logo-line-after"><i></i></span>
+          </a>
+        </div>
+        <p class="site-subtitle" style="opacity: 1; top: 0px;">
+          My notes
+        </p>
+      </div>
+      <div class="site-nav-toggle">
+        <button>
+        <span class="btn-bar"></span>
+        <span class="btn-bar"></span>
+        <span class="btn-bar"></span>
+        </button>
+      </div>
+    </div>
+    <nav class="site-nav">
+    <ul id="menu" class="menu">
+      {{ if .MenuHome }}
+      <li class="menu-item menu-item-home menu-item-active" style="opacity: 1; transform: translateY(0px);">
+      {{ else }}
+      <li class="menu-item menu-item-home" style="opacity: 1; transform: translateY(0px);">
+      {{ end }}
+      <a href="{% url 'blog:index' %}" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i><br>
+            首页
+      </a>
+      </li>
+      {{if .MenuArchive}}
+      <li class="menu-item menu-item-archives menu-item-active" style="opacity: 1; transform: translateY(0px);">
+      {{ else }}
+      <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
+      {{ end }}
+      <a href="{% url 'blog:archives_list' %}" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i><br>
+            归档
+      </a>
+      </li>
+      {{if .MenuTag}}
+      <li class="menu-item menu-item-tags menu-item-active" style="opacity: 1; transform: translateY(0px);">
+      {{else}}
+      <li class="menu-item menu-item-tags" style="opacity: 1; transform: translateY(0px);">
+      {{end}}
+      <a href="{% url 'blog:tag_list' %}" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i><br>
+            标签
+      </a>
+      </li>
+      <li class="menu-item menu-item-search" style="opacity: 1; transform: translateY(0px);">
+      <a href="/search_page" class="popup-trigger">
+      <i class="menu-item-icon fa fa-search fa-fw"></i><br>
+            搜索
+      </a>
+      </li>
+    </ul>
+    <div class="site-search">
+      <div class="algolia-popup popup search-popup">
+        <div class="algolia-search">
+          <div class="algolia-search-input-icon">
+            <i class="fa fa-search"></i>
+          </div>
+          <div class="algolia-search-input" id="algolia-search-input">
+            <div class="ais-search-box">
+              <input autocapitalize="off" autocomplete="off" autocorrect="off" placeholder="搜索" role="textbox" spellcheck="false" type="text" value="" class="ais-search-box--input">
+            </div>
+          </div>
+        </div>
+        <div class="algolia-results">
+          <div id="algolia-stats">
+          </div>
+          <div id="algolia-hits">
+          </div>
+          <div id="algolia-pagination" class="algolia-pagination">
+          </div>
+        </div>
+        <span class="popup-btn-close">
+        <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+    </div>
+    </nav>
+  </div>
+  </header>
+  <main id="main" class="main">
+  <div class="main-inner">
+    <div class="content-wrap">
+      <div id="content" class="content">
+        {{block "content" .}}
+        {{end}}
+      </div>
+        {{block "comments" .}}
+        {{end}}
+    </div>
+    <div class="sidebar-toggle">
+      <div class="sidebar-toggle-line-wrap">
+        <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+        <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+        <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+      </div>
+    </div>
+    <aside id="sidebar" class="sidebar" style="margin-top: 306px; display: block;">
+    <div class="sidebar-inner">
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+        <img class="site-author-image" itemprop="image" src="/static/blog/pic/m3.jpg" alt="Code2qing">
+        <p class="site-author-name" itemprop="name">
+          Smile2u
+        </p>
+        <p class="site-description motion-element" itemprop="description">
+          随风而起
+        </p>
+      </div>
+      <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        <a href="{% url 'blog:archives_list'%}">
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <a href="{% url 'blog:category_list' %}">
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <a href="{% url 'blog:tag_list' %}">
+        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+      </nav>
+      <div class="feed-link motion-element">
+        <a href="/api" rel="alternate">
+        <i class="fa fa-rss"></i>
+              API
+        </a>
+      </div>
+      <div class="links-of-author motion-element">
+        <span class="links-of-author-item">
+        <a href="https://github.com/Code2qing" target="_blank" title="GitHub">
+        <i class="fa fa-fw fa-github"></i>
+                  GitHub
+        </a>
+        </span>
+        
+      </div>
+      </section>
+    </div>
+    </aside>
+  </div>
+  </main>
+  <footer id="footer" class="footer">
+  <div class="footer-inner">
+    <div class="copyright">
+  ©
+      <span itemprop="copyrightYear">{% now "Y"%}</span>
+      <span class="with-love">
+      <i class="fa fa-heart"></i>
+      </span>
+      <span class="author" itemprop="copyrightHolder">Code2qing</span>
+    </div>
+    <div class="powered-by">
+  基于
+      <a class="theme-link" href="https://www.djangoproject.com/">Django</a> 的<a class="theme-link" href="https://github.com/Code2qing/Blog2django">博客程序</a>
+    </div>
+    <div class="theme-info">
+  主题修改自
+      <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+      </a>
+    </div>
+  </div>
+  </footer>
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span id="scrollpercent"><span>0</span>%</span>
+  </div>
+</div>
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+<script type="text/javascript" src="/static/blog/js/jquery.min.js"></script>
+<script type="text/javascript" src="/static/blog/js/fastclick.min.js"></script>
+<script type="text/javascript" src="/static/blog/js/jquery.lazyload.min.js"></script>
+<script type="text/javascript" src="/static/blog/js/velocity.min.js"></script>
+<script type="text/javascript" src="/static/blog/js/velocity.ui.min.js"></script>
+<script type="text/javascript" src="/static/blog/js/jquery.fancybox.pack.js"></script>
+<script type="text/javascript" src="/static/blog/js/utils.js"></script>
+<script type="text/javascript" src="/static/blog/js/motion.js"></script>
+<script type="text/javascript" src="/static/blog/js/affix.js"></script>
+<script type="text/javascript" src="/static/blog/js/pisces.js"></script>
+<script type="text/javascript" src="/static/blog/js/bootstrap.js"></script>
+</body>
+</html>

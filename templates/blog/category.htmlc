@@ -1,0 +1,20 @@
+{% extends 'blog/base1.html' %}
+{% block title %}分类{% endblock %}
+{% load blog_tags %}
+{% block content %}
+<div id="posts" class="posts-expand">
+	<div class="category-all-page">
+		{% get_categories as category_list %}
+		<div class="category-all-title">
+目前共计 {{ category_list.count }} 个分类
+		</div>
+		<div class="category-all">
+			<ul class="category-list">
+				{% for category in category_list %}
+				<li class="category-list-item"><a class="category-list-link" href="{% url 'blog:category' category.id %}">{{category.name}}</a><span class="category-list-count">{{category.num_posts}}</span></li>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+</div>
+{% endblock content %}
