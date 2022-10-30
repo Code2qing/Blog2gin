@@ -149,8 +149,12 @@ func BlogIndex(c *gin.Context) {
 	indexCtx.MenuHome = true
 	totalPages := (totalCount + conf.IndexPageSize - 1) / conf.IndexPageSize
 	pageRange := makeRange(1, totalPages)
+	rightEnd := pageNum + 2
+	if pageNum+2 > len(pageRange) {
+		rightEnd = len(pageRange)
+	}
 	if pageNum == 1 {
-		indexCtx.Right = pageRange[pageNum : pageNum+2]
+		indexCtx.Right = pageRange[pageNum:rightEnd]
 		if indexCtx.Right[len(indexCtx.Right)-1]+1 < totalPages {
 			indexCtx.RightHasMore = true
 		}
@@ -175,7 +179,7 @@ func BlogIndex(c *gin.Context) {
 			startNum = pageNum - 3
 		}
 		indexCtx.Left = pageRange[startNum : pageNum-1]
-		indexCtx.Right = pageRange[pageNum : pageNum+2]
+		indexCtx.Right = pageRange[pageNum:rightEnd]
 		if indexCtx.Right[len(indexCtx.Right)-1]+1 < totalPages {
 			indexCtx.RightHasMore = true
 		}
