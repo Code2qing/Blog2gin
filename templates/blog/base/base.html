@@ -32,7 +32,7 @@
 <meta name="description" content="随风而起">
 <meta property="og:type" content="website">
 <meta property="og:title" content="{{block "og_title" .}}Smile2u{{end}}">
-<meta property="og:url" content="">
+<meta property="og:url" content="//{{.GinCtx.Request.Host}}{{.GinCtx.FullPath}}">
 <meta property="og:site_name" content="Smile2u">
 <meta property="og:description" content="随风而起">
 <meta name="twitter:card" content="summary">
@@ -50,7 +50,7 @@
     
   };
 </script>
-<link rel="canonical" href="">
+<link rel="canonical" href="//{{.GinCtx.Request.Host}}{{.GinCtx.FullPath}}">
 <title>{{block "title" .}} Smile2U {{end}}</title>
 <style type="text/css">
 .fancybox-margin{margin-right:17px;}
@@ -65,7 +65,7 @@
     <div class="site-brand-wrapper">
       <div class="site-meta ">
         <div class="custom-logo-site-title">
-          <a href="{% url 'blog:index' %}" class="brand" rel="start" style="opacity: 1;">
+          <a href="/" class="brand" rel="start" style="opacity: 1;">
           <span class="logo-line-before"><i></i></span>
           <span class="site-title" style="opacity: 1; top: 0px;">Smile 2 U</span>
           <span class="logo-line-after"><i></i></span>
@@ -90,7 +90,7 @@
       {{ else }}
       <li class="menu-item menu-item-home" style="opacity: 1; transform: translateY(0px);">
       {{ end }}
-      <a href="{% url 'blog:index' %}" rel="section">
+      <a href="/" rel="section">
       <i class="menu-item-icon fa fa-fw fa-home"></i><br>
             首页
       </a>
@@ -100,7 +100,7 @@
       {{ else }}
       <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
       {{ end }}
-      <a href="{% url 'blog:archives_list' %}" rel="section">
+      <a href="/archives" rel="section">
       <i class="menu-item-icon fa fa-fw fa-archive"></i><br>
             归档
       </a>
@@ -110,7 +110,7 @@
       {{else}}
       <li class="menu-item menu-item-tags" style="opacity: 1; transform: translateY(0px);">
       {{end}}
-      <a href="{% url 'blog:tag_list' %}" rel="section">
+      <a href="/tags" rel="section">
       <i class="menu-item-icon fa fa-fw fa-tags"></i><br>
             标签
       </a>
@@ -181,20 +181,20 @@
       </div>
       <nav class="site-state motion-element">
       <div class="site-state-item site-state-posts">
-        <a href="{% url 'blog:archives_list'%}">
-        <span class="site-state-item-count">20</span>
+        <a href="/archives">
+        <span class="site-state-item-count">{{.PostCount}}</span>
         <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
-        <a href="{% url 'blog:category_list' %}">
-        <span class="site-state-item-count">30</span>
+        <a href="/categories">
+        <span class="site-state-item-count">{{.CategoryCount}}</span>
         <span class="site-state-item-name">分类</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <a href="{% url 'blog:tag_list' %}">
-        <span class="site-state-item-count">100</span>
+        <a href="/tags">
+        <span class="site-state-item-count">{{.TagCount}}</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>
@@ -223,7 +223,7 @@
   <div class="footer-inner">
     <div class="copyright">
   ©
-      <span itemprop="copyrightYear">{% now "Y"%}</span>
+      <span itemprop="copyrightYear">{{.NowYear}}</span>
       <span class="with-love">
       <i class="fa fa-heart"></i>
       </span>

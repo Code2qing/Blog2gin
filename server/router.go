@@ -7,5 +7,6 @@ import (
 
 func InitRouter(r *gin.Engine) {
 	r.GET("/", controllers.BlogIndex)
+	r.GET("/post/:postID", controllers.BlogDetail)
 	r.Static("/static", "static")
 }

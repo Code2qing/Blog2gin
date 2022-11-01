@@ -3,9 +3,11 @@ module Blog2Gin
 go 1.18
 
 require (
+	github.com/abhinav/goldmark-toc v0.2.1
 	github.com/gin-contrib/multitemplate v0.0.0-20220829131020-8c2a8441bc2b
 	github.com/gin-gonic/gin v1.8.1
 	github.com/sirupsen/logrus v1.9.0
+	github.com/yuin/goldmark v1.5.2
 	gitlab.com/golang-commonmark/markdown v0.0.0-20211110145824-bf3e522c626a
 	golang.org/x/sync v0.1.0
 	gorm.io/driver/mysql v1.4.3

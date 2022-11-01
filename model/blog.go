@@ -60,6 +60,31 @@ func GetPostCount() (int, error) {
 	return int(totalCount), nil
 }
 
+func GetCategoryCount() (int, error) {
+	var count int64
+	if err := conf.DB.Model(&Category{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}
+
+func GetTagCount() (int, error) {
+	var count int64
+	if err := conf.DB.Model(&Tag{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}
+
+func GetPostDetailWithTagCate(postID int) (*BlogPost, error) {
+	var blogPost BlogPost
+	err := conf.DB.Order("blog_post.id desc").Joins("Category").Preload("Tags").Where("blog_post.id = ?", postID).First(&blogPost).Error
+	if err != nil {
+		return nil, err
+	}
+	return &blogPost, nil
+}
+
 func GetPostsByCategory(categoryID int) ([]BlogPost, error) {
 	var BlogPosts []BlogPost
 	err := conf.DB.Order("`blog_post`.`id` desc").Joins("Category").Where("Category.id = ?", categoryID).Find(&BlogPosts).Error
