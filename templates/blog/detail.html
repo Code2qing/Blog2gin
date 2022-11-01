@@ -25,7 +25,7 @@
 		</span>
 		<span class="post-meta-item-text">发表于</span>
 		<time title="创建于" itemprop="dateCreated datePublished" datetime="{{ .BlogPost.CreatedTime }}">
-{{ .BlogPost.CreatedTime }}
+{{ .BlogPost.CreatedTime.Format "2006-01-02 15:04:05" }}
 		</time>
 		</span>
 		<span class="post-category">
@@ -86,7 +86,7 @@
 	<footer class="post-footer">
 	<div class="post-tags">
 			{{ range $tag := .BlogPost.Tags }}
-		<a href="/tag/$tag.id" rel="tag"># {{$tag.Name}}</a>
+		<a href="/tag/{{$tag.ID}}" rel="tag"># {{$tag.Name}}</a>
 		{{ end }}
 		
 		
