@@ -3,7 +3,7 @@ FROM golang:1.19-alpine AS builder
 RUN go env -w GO111MODULE=auto \
   && go env -w GOPROXY=https://goproxy.cn,direct  \
   && sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && cat /etc/apk/repositories \
-  && apk add --no-cache bash git openssh
+  && apk add --no-cache bash git gcc musl-dev
 WORKDIR /build
 
 COPY ./ .
