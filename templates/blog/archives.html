@@ -1,0 +1,17 @@
+{{ define "title" }}归档{{ end }}
+{{ define "content" }}
+<div id="posts" class="posts-expand">
+	<div class="category-all-page">
+		<div class="category-all-title">
+目前共计 {{ .Archives|len }} 个归档
+		</div>
+		<div class="category-all">
+			<ul class="category-list">
+				{{ range $archive := .Archives }}
+				<li class="category-list-item"><a href="/archives/{{$archive.Year}}/{{$archive.Month}}">{{$archive.Year}} 年 {{$archive.Month}} 月</a><span class="category-list-count">{{$archive.Count}}</span></li>
+				{{ end }}
+			</ul>
+		</div>
+	</div>
+</div>
+{{ end }}

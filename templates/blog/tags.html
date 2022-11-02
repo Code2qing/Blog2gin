@@ -1,0 +1,17 @@
+{{ define "title" }}标签{{ end }}
+{{ define "content" }}
+<div id="posts" class="posts-expand">
+	<div class="category-all-page">
+		<div class="category-all-title">
+目前共计 {{ .Tags|len }} 个分类
+		</div>
+		<div class="category-all">
+			<ul class="category-list">
+				{{ range $tag := .Tags }}
+				<li class="category-list-item"><a class="category-list-link" href="/tags/{{$tag.TagID}}">{{$tag.TagName}}</a><span class="category-list-count">{{$tag.TagPostCount}}</span></li>
+				{{ end }}
+			</ul>
+		</div>
+	</div>
+</div>
+{{ end }}

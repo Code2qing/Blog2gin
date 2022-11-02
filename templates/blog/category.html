@@ -1,0 +1,16 @@
+{{ define "content" }}
+<div id="posts" class="posts-expand">
+	<div class="category-all-page">
+		<div class="category-all-title">
+目前共计 {{ .Categories|len }} 个分类
+		</div>
+		<div class="category-all">
+			<ul class="category-list">
+				{{ range $category := .Categories }}
+				<li class="category-list-item"><a class="category-list-link" href="/category/{{$category.ID}}">{{$category.Name}}</a><span class="category-list-count">{{$category.CategoryCount}}</span></li>
+				{{ end }}
+			</ul>
+		</div>
+	</div>
+</div>
+{{ end }}

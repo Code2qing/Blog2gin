@@ -85,8 +85,10 @@
 	</div>
 	<footer class="post-footer">
 	<div class="post-tags">
-			{{ range $tag := .BlogPost.Tags }}
-		<a href="/tag/{{$tag.ID}}" rel="tag"># {{$tag.Name}}</a>
+		{{ range $tag := .BlogPost.Tags }}
+		{{if $tag.TagID}}
+		<a href="/tag/{{$tag.TagID}}" rel="tag"># {{$tag.TagName}}</a>
+		{{end}}
 		{{ end }}
 		
 		

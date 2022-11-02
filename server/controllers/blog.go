@@ -14,6 +14,7 @@ import (
 	"github.com/yuin/goldmark/util"
 	"gitlab.com/golang-commonmark/markdown"
 	"golang.org/x/sync/errgroup"
+	"gorm.io/gorm"
 	"net/http"
 	"runtime"
 	"strings"
@@ -26,6 +27,18 @@ type indexParam struct {
 
 type detailParam struct {
 	PostID int `uri:"postID" binding:"required"`
+}
+
+type archiveParam struct {
+	Year  int `uri:"year" binding:"required"`
+	Month int `uri:"month" binding:"required"`
+}
+
+type tagParam struct {
+	TagID int `uri:"tag_id" binding:"required"`
+}
+type categoryParam struct {
+	CategoryID int `uri:"category_id" binding:"required"`
 }
 
 type baseCtxData struct {
@@ -57,6 +70,20 @@ type detailCtxData struct {
 	baseCtxData
 	BlogPost *model.BlogPost
 }
+type archivesCtxData struct {
+	baseCtxData
+	Archives []*model.Archive
+}
+
+type tagCtxData struct {
+	baseCtxData
+	Tags []*model.TagCount
+}
+
+type categoryCtxData struct {
+	baseCtxData
+	Categories []*model.CategoryCount
+}
 
 func BlogIndex(c *gin.Context) {
 	var args indexParam
@@ -71,7 +98,7 @@ func BlogIndex(c *gin.Context) {
 	//var blogPostChan = make(chan any)
 	//var blogCtPostChan = make(chan any)
 	//var totalCountChan = make(chan any)
-	var dataChan = make(chan map[string]any, 4)
+	var dataChan = make(chan map[string]any, 1)
 
 	//var errCH = make(chan error, 3)
 	//go execModel(blogPostChan, errCH, func() (any, error) { return model.GetPostsByPage(pageNum, conf.IndexPageSize) })
@@ -87,21 +114,11 @@ func BlogIndex(c *gin.Context) {
 	//		ret, err := model.GetPostsByCategory(1)
 	//		return map[string]any{"blog_category_posts": ret}, err
 	//	})
-	execModel(&g, dataChan,
-		func() (map[string]any, error) {
-			ret, err := model.GetCategoryCount()
-			return map[string]any{"categoryCount": ret}, err
-		})
-	execModel(&g, dataChan,
-		func() (map[string]any, error) {
-			ret, err := model.GetPostCount()
-			return map[string]any{"totalCount": ret}, err
-		})
-	execModel(&g, dataChan,
-		func() (map[string]any, error) {
-			ret, err := model.GetTagCount()
-			return map[string]any{"tagCount": ret}, err
-		})
+	tagCount, categoryCount, totalCount, err := baseCount(&g)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	//g.Go(execModel(
 	//	dataChan,
 	//	func() (map[string]any, error) {
@@ -136,8 +153,7 @@ func BlogIndex(c *gin.Context) {
 	//	dataChan <- map[string]any{"total_count": ret}
 	//	return err
 	//})
-
-	err := g.Wait()
+	err = g.Wait()
 	close(dataChan)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -149,16 +165,11 @@ func BlogIndex(c *gin.Context) {
 			dbData[key] = data[key]
 		}
 	}
-	totalCountV, ok := dbData["totalCount"]
 	blogPostsV, ok := dbData["blogPosts"]
-	categoryCountV, ok := dbData["categoryCount"]
-	tagCountV, ok := dbData["tagCount"]
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "not total_count!"})
+		return
 	}
-	tagCount := tagCountV.(int)
-	totalCount := totalCountV.(int)
-	categoryCount := categoryCountV.(int)
 	blogPosts := blogPostsV.([]*model.BlogPost)
 	start := time.Now()
 	for _, post := range blogPosts {
@@ -316,14 +327,25 @@ func PaginationData(indexCtx *indexContextData, pageNum int, totalPages int) {
 		}
 	}
 }
+func DefaultBaseCtxData() *baseCtxData {
+	nowYear, _, _ := time.Now().Date()
+	return &baseCtxData{NowYear: nowYear}
+}
 
 func DefaultIdxCtxData() *indexContextData {
-	nowYear, _, _ := time.Now().Date()
-	return &indexContextData{baseCtxData: baseCtxData{NowYear: nowYear}, PageNum: 1, TotalPageNum: 1}
+	return &indexContextData{baseCtxData: *DefaultBaseCtxData(), PageNum: 1, TotalPageNum: 1}
 }
 func DefaultDetailCtxData() *detailCtxData {
-	nowYear, _, _ := time.Now().Date()
-	return &detailCtxData{baseCtxData: baseCtxData{NowYear: nowYear}}
+	return &detailCtxData{baseCtxData: *DefaultBaseCtxData()}
+}
+func DefaultArchivesCtxData() *archivesCtxData {
+	return &archivesCtxData{baseCtxData: *DefaultBaseCtxData()}
+}
+func DefaultTagsCtxData() *tagCtxData {
+	return &tagCtxData{baseCtxData: *DefaultBaseCtxData()}
+}
+func DefaultCategoriesData() *categoryCtxData {
+	return &categoryCtxData{baseCtxData: *DefaultBaseCtxData()}
 }
 func trace(message string) string {
 	var pcs [32]uintptr
@@ -373,18 +395,75 @@ func makeRange(min, max int) []int {
 
 }
 
+func baseCount(g *errgroup.Group) (int, int, int, error) {
+	dataChan := make(chan map[string]any, 3)
+	execModel(g, dataChan,
+		func() (map[string]any, error) {
+			ret, err := model.GetCategoryCount()
+			return map[string]any{"categoryCount": ret}, err
+		})
+	execModel(g, dataChan,
+		func() (map[string]any, error) {
+			ret, err := model.GetPostCount()
+			return map[string]any{"totalCount": ret}, err
+		})
+	execModel(g, dataChan,
+		func() (map[string]any, error) {
+			ret, err := model.GetTagCount()
+			return map[string]any{"tagCount": ret}, err
+		})
+	err := g.Wait()
+	close(dataChan)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	dbData := map[string]any{}
+	for data := range dataChan {
+		for key := range data {
+			dbData[key] = data[key]
+		}
+	}
+	tagCount := dbData["tagCount"].(int)
+	totalCount := dbData["totalCount"].(int)
+	categoryCount := dbData["categoryCount"].(int)
+	return tagCount, categoryCount, totalCount, nil
+}
+
 func BlogDetail(c *gin.Context) {
 	var args detailParam
+	var dataChan = make(chan map[string]any, 1)
 	if err := c.BindUri(&args); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	postID := args.PostID
-	blogPost, err := model.GetPostDetailWithTagCate(postID)
+
+	var g errgroup.Group
+	execModel(&g, dataChan,
+		func() (map[string]any, error) {
+			ret, err := model.GetPostDetailWithTagCate(postID)
+			return map[string]any{"blogPost": ret}, err
+		})
+	tagCount, categoryCount, totalCount, err := baseCount(&g)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	err = g.Wait()
+	close(dataChan)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	dbData := map[string]any{}
+	for data := range dataChan {
+		for key := range data {
+			dbData[key] = data[key]
+		}
+	}
+
+	blogPost := dbData["blogPost"].(*model.BlogPost)
+
 	//md := markdown.New(markdown.XHTMLOutput(true))
 	//blogPost.Body = md.RenderToString([]byte(blogPost.Body))
 	start := time.Now()
@@ -403,11 +482,268 @@ func BlogDetail(c *gin.Context) {
 	var buf bytes.Buffer
 	if err := md.Convert([]byte(blogPost.Body), &buf); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "markdown fail!"})
+		return
+	}
+	blogPost.Views += 1
+	err = conf.DB.Model(&model.BlogPost{ID: uint(postID)}).Update("views", gorm.Expr("views+1")).Error
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	blogPost.Body = buf.String()
 	log.Info("exec time: ", time.Since(start))
 	detailCtx := DefaultDetailCtxData()
 	detailCtx.GinCtx = c
 	detailCtx.BlogPost = blogPost
+	detailCtx.TagCount = tagCount
+	detailCtx.PostCount = totalCount
+	detailCtx.CategoryCount = categoryCount
+
 	c.HTML(http.StatusOK, "detail.html", detailCtx)
+}
+
+func Archives(c *gin.Context) {
+	var g errgroup.Group
+	dataChan := make(chan map[string]any, 1)
+	execModel(&g, dataChan,
+		func() (map[string]any, error) {
+			ret, err := model.GroupArchive()
+			return map[string]any{"archives": ret}, err
+		})
+	tagCount, categoryCount, totalCount, err := baseCount(&g)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err = g.Wait()
+	close(dataChan)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	dbData := map[string]any{}
+	for data := range dataChan {
+		for key := range data {
+			dbData[key] = data[key]
+		}
+	}
+	archives := dbData["archives"].([]*model.Archive)
+
+	archivesCtx := DefaultArchivesCtxData()
+	archivesCtx.GinCtx = c
+	archivesCtx.Archives = archives
+	archivesCtx.MenuArchive = true
+	archivesCtx.TagCount, archivesCtx.CategoryCount, archivesCtx.PostCount = tagCount, categoryCount, totalCount
+	c.HTML(http.StatusOK, "archives.html", archivesCtx)
+}
+
+func ArchivePosts(c *gin.Context) {
+	var args archiveParam
+	if err := c.BindUri(&args); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	year := args.Year
+	month := args.Month
+	var g errgroup.Group
+	dataChan := make(chan map[string]any, 1)
+	execModel(&g, dataChan,
+		func() (map[string]any, error) {
+			ret, err := model.ArchivePosts(year, month)
+			return map[string]any{"blogPosts": ret}, err
+		})
+	tagCount, categoryCount, totalCount, err := baseCount(&g)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err = g.Wait()
+	close(dataChan)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	dbData := map[string]any{}
+	for data := range dataChan {
+		for key := range data {
+			dbData[key] = data[key]
+		}
+	}
+	blogPosts := dbData["blogPosts"].([]*model.BlogPost)
+
+	for _, post := range blogPosts {
+		md := markdown.New(markdown.XHTMLOutput(true))
+		post.Excerpt = md.RenderToString([]byte(post.Excerpt))
+
+	}
+
+	archivePostCtx := DefaultIdxCtxData()
+	archivePostCtx.TagCount = tagCount
+	archivePostCtx.PostCount = totalCount
+	archivePostCtx.BlogPosts = blogPosts
+	archivePostCtx.CategoryCount = categoryCount
+	archivePostCtx.MenuArchive = true
+	archivePostCtx.GinCtx = c
+	c.HTML(http.StatusOK, "index.html", archivePostCtx)
+}
+
+func Tags(c *gin.Context) {
+	var g errgroup.Group
+	dataChan := make(chan map[string]any, 1)
+	execModel(&g, dataChan,
+		func() (map[string]any, error) {
+			ret, err := model.TagList()
+			return map[string]any{"tags": ret}, err
+		})
+	tagCount, categoryCount, totalCount, err := baseCount(&g)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err = g.Wait()
+	close(dataChan)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	dbData := map[string]any{}
+	for data := range dataChan {
+		for key := range data {
+			dbData[key] = data[key]
+		}
+	}
+	tags := dbData["tags"].([]*model.TagCount)
+	tagsCtx := DefaultTagsCtxData()
+	tagsCtx.GinCtx = c
+	tagsCtx.Tags = tags
+	tagsCtx.MenuTag = true
+	tagsCtx.TagCount, tagsCtx.CategoryCount, tagsCtx.PostCount = tagCount, categoryCount, totalCount
+	c.HTML(http.StatusOK, "tags.html", tagsCtx)
+}
+
+func TagPosts(c *gin.Context) {
+	var args tagParam
+	if err := c.BindUri(&args); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	tagID := args.TagID
+	var g errgroup.Group
+	dataChan := make(chan map[string]any, 1)
+	execModel(&g, dataChan,
+		func() (map[string]any, error) {
+			ret, err := model.TagPosts(tagID)
+			return map[string]any{"tagPosts": ret}, err
+		})
+	tagCount, categoryCount, totalCount, err := baseCount(&g)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err = g.Wait()
+	close(dataChan)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	dbData := map[string]any{}
+	for data := range dataChan {
+		for key := range data {
+			dbData[key] = data[key]
+		}
+	}
+	blogPosts := dbData["tagPosts"].([]*model.BlogPost)
+
+	for _, post := range blogPosts {
+		md := markdown.New(markdown.XHTMLOutput(true))
+		post.Excerpt = md.RenderToString([]byte(post.Excerpt))
+	}
+
+	archivePostCtx := DefaultIdxCtxData()
+	archivePostCtx.TagCount = tagCount
+	archivePostCtx.PostCount = totalCount
+	archivePostCtx.BlogPosts = blogPosts
+	archivePostCtx.CategoryCount = categoryCount
+	archivePostCtx.MenuArchive = true
+	archivePostCtx.GinCtx = c
+	c.HTML(http.StatusOK, "index.html", archivePostCtx)
+}
+
+func Categories(c *gin.Context) {
+	var g errgroup.Group
+	dataChan := make(chan map[string]any, 1)
+	execModel(&g, dataChan,
+		func() (map[string]any, error) {
+			ret, err := model.CategoryList()
+			return map[string]any{"categories": ret}, err
+		})
+	tagCount, categoryCount, totalCount, err := baseCount(&g)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err = g.Wait()
+	close(dataChan)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	dbData := map[string]any{}
+	for data := range dataChan {
+		for key := range data {
+			dbData[key] = data[key]
+		}
+	}
+	categories := dbData["categories"].([]*model.CategoryCount)
+	categoryCtx := DefaultCategoriesData()
+	categoryCtx.GinCtx = c
+	categoryCtx.Categories = categories
+	categoryCtx.TagCount, categoryCtx.CategoryCount, categoryCtx.PostCount = tagCount, categoryCount, totalCount
+	c.HTML(http.StatusOK, "category.html", categoryCtx)
+}
+
+func CategoryPosts(c *gin.Context) {
+	var args categoryParam
+	if err := c.BindUri(&args); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	categoryID := args.CategoryID
+	var g errgroup.Group
+	dataChan := make(chan map[string]any, 1)
+	execModel(&g, dataChan,
+		func() (map[string]any, error) {
+			ret, err := model.CategoryPosts(categoryID)
+			return map[string]any{"categoryPosts": ret}, err
+		})
+	tagCount, categoryCount, totalCount, err := baseCount(&g)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err = g.Wait()
+	close(dataChan)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	dbData := map[string]any{}
+	for data := range dataChan {
+		for key := range data {
+			dbData[key] = data[key]
+		}
+	}
+	blogPosts := dbData["categoryPosts"].([]*model.BlogPost)
+
+	for _, post := range blogPosts {
+		md := markdown.New(markdown.XHTMLOutput(true))
+		post.Excerpt = md.RenderToString([]byte(post.Excerpt))
+	}
+
+	categoryPostCtx := DefaultIdxCtxData()
+	categoryPostCtx.TagCount = tagCount
+	categoryPostCtx.PostCount = totalCount
+	categoryPostCtx.BlogPosts = blogPosts
+	categoryPostCtx.CategoryCount = categoryCount
+	categoryPostCtx.GinCtx = c
+	c.HTML(http.StatusOK, "index.html", categoryPostCtx)
 }
