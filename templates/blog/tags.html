@@ -8,7 +8,7 @@
 		<div class="category-all">
 			<ul class="category-list">
 				{{ range $tag := .Tags }}
-				<li class="category-list-item"><a class="category-list-link" href="/tags/{{$tag.TagID}}">{{$tag.TagName}}</a><span class="category-list-count">{{$tag.TagPostCount}}</span></li>
+				<li class="category-list-item"><a class="category-list-link" href="/tag/{{$tag.TagID}}">{{$tag.TagName}}</a><span class="category-list-count">{{$tag.TagPostCount}}</span></li>
 				{{ end }}
 			</ul>
 		</div>
