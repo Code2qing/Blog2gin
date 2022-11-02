@@ -14,5 +14,9 @@ func InitRouter(r *gin.Engine) {
 	r.GET("/tags/:tag_id", controllers.TagPosts)
 	r.GET("/categories", controllers.Categories)
 	r.GET("/category/:category_id", controllers.CategoryPosts)
+
+	r.GET("/editor/edit_post/:postID", controllers.Editor)
+	r.POST("/editor/update_post", controllers.UpdateMd)
+
 	r.Static("/static", "static")
 }

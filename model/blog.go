@@ -37,7 +37,7 @@ type TagCount struct {
 }
 
 type BlogPostTags struct {
-	ID     uint
+	ID     uint `gorm:"primaryKey;column:id"`
 	TagID  uint
 	PostID uint
 }
@@ -70,7 +70,7 @@ func (BlogPost) TableName() string {
 
 func GetPostsByPage(pageNum int, pageSize int) ([]*BlogPost, error) {
 	var BlogPosts []*BlogPost
-	err := conf.DB.Order("id desc").Limit(pageSize).Offset(pageSize * (pageNum - 1)).Joins("Category").Find(&BlogPosts).Error
+	err := conf.DB.Order("blog_post.id desc").Limit(pageSize).Offset(pageSize * (pageNum - 1)).Joins("Category").Find(&BlogPosts).Error
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +151,12 @@ func GetPostDetailWithTagCate(postID int) (blogPost *BlogPost, err error) {
 
 func GroupArchive() ([]*Archive, error) {
 	var Archives []*Archive
-	err := conf.DB.Model(&BlogPost{}).Select("YEAR(created_time) as `year`, MONTH(created_time) as `month`, count(*) as `count`").Group("`year` desc, `month` desc").Find(&Archives).Error
+	var err error
+	if conf.Conf.Database.Type == "mysql" {
+		err = conf.DB.Model(&BlogPost{}).Select("YEAR(created_time) as `year`, MONTH(created_time) as `month`, count(*) as `count`").Group("`year` desc, `month` desc").Find(&Archives).Error
+	} else {
+		err = conf.DB.Model(&BlogPost{}).Select("strftime('%Y', created_time) as `year`, strftime('%m', created_time) as `month`, count(*) as `count`").Group("`year`, `month`").Order("year desc, month desc").Find(&Archives).Error
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +165,12 @@ func GroupArchive() ([]*Archive, error) {
 
 func ArchivePosts(year int, month int) ([]*BlogPost, error) {
 	var blogPosts []*BlogPost
-	err := conf.DB.Where("YEAR(created_time)=? AND MONTH(created_time)=?", year, month).Joins("Category").Order("id desc").Find(&blogPosts).Error
+	var err error
+	if conf.Conf.Database.Type == "mysql" {
+		err = conf.DB.Where("YEAR(created_time)=? AND MONTH(created_time)=?", year, month).Joins("Category").Order("id desc").Find(&blogPosts).Error
+	} else {
+		err = conf.DB.Where("strftime('%Y', created_time)=? AND strftime('%m', created_time)=?", year, month).Joins("Category").Order("created_time desc").Find(&blogPosts).Error
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +191,7 @@ func TagList() ([]*TagCount, error) {
 
 func TagPosts(tagID int) ([]*BlogPost, error) {
 	var blogPosts []*BlogPost
-	err := conf.DB.Model(&Tag{TagID: uint(tagID)}).Joins("Category").Order("id desc").Association("BlogPosts").Find(&blogPosts)
+	err := conf.DB.Model(&Tag{TagID: uint(tagID)}).Joins("Category").Order("created_time desc").Association("BlogPosts").Find(&blogPosts)
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +211,7 @@ func CategoryList() ([]*CategoryCount, error) {
 
 func CategoryPosts(categoryID int) ([]*BlogPost, error) {
 	var blogPosts []*BlogPost
-	err := conf.DB.Model(&Category{ID: uint(categoryID)}).Joins("Category").Order("id desc").Association("BlogPosts").Find(&blogPosts)
+	err := conf.DB.Model(&Category{ID: uint(categoryID)}).Joins("Category").Order("created_time desc").Association("BlogPosts").Find(&blogPosts)
 	if err != nil {
 		return nil, err
 	}

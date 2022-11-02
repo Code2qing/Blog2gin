@@ -663,7 +663,7 @@ func TagPosts(c *gin.Context) {
 	archivePostCtx.PostCount = totalCount
 	archivePostCtx.BlogPosts = blogPosts
 	archivePostCtx.CategoryCount = categoryCount
-	archivePostCtx.MenuArchive = true
+	archivePostCtx.MenuTag = true
 	archivePostCtx.GinCtx = c
 	c.HTML(http.StatusOK, "index.html", archivePostCtx)
 }

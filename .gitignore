@@ -12,6 +12,7 @@
 ### Example user template template
 ### Example user template
 *.json
+*.db
 # IntelliJ project files
 .idea
 *.iml

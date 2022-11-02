@@ -1,0 +1,58 @@
+<link rel="stylesheet" href="/static/editor/css/editormd.css" />
+<label for="passwd"><span>passwd：</span></label>
+<input type="password" id="passwd" name="passwd" required>
+<button type="button" class="submit" id="save">保存</button>
+<header>
+    <h1>编辑文章</h1>
+</header>
+<div id="test-editor">
+    <textarea id="post_md" style="display:none;">{{.BlogPost.Body}}
+    </textarea>
+</div>
+<header>
+    <h1>编辑节选</h1>
+</header>
+<div id="test-editorB">
+    <textarea id="post_excert_md" style="display:none;">{{.BlogPost.Excerpt}}
+    </textarea>
+</div>
+<script src="https://cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+<script src="/static/editor/editormd.min.js"></script>
+<script type="text/javascript">
+    $(function() {
+        var editor = editormd("test-editor", {
+            width  : "95%",
+            height : "80%",
+            path   : "/static/editor/lib/"
+        });
+
+        var test_editor_b = editormd("test-editorB", {
+            width  : "95%",
+            height : "70%",
+            path   : "/static/editor/lib/"
+        })
+    });
+</script>
+<script type="text/javascript">
+    $(function()
+    {
+
+        //异步提交表单
+        $("#save").click(function(){
+            $.ajaxSetup({contentType: "application/json; charset=utf-8"});
+            json = {"passwd": $("#passwd").val(), "post_id": {{.PostID}}, "md": $("#post_md").val(), "excerpt": $("#post_excert_md").val()}
+            $.post("/editor/update_post",JSON.stringify(json),function(data){
+
+                if(data.msg=="ok")
+                {
+                    alert ("保存成功");
+                    setTimeout(function(){ window.location.reload(); }, 100);
+                } else {
+                    alert (data.msg);
+                    setTimeout(function(){ window.location.reload(); }, 100);
+                }
+
+            },'json')
+        })
+    })
+</script>
