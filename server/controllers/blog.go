@@ -3,6 +3,7 @@ package controllers
 import (
 	"Blog2Gin/conf"
 	"Blog2Gin/model"
+	"Blog2Gin/server/forms"
 	"bytes"
 	"fmt"
 	toc "github.com/abhinav/goldmark-toc"
@@ -21,26 +22,6 @@ import (
 	"time"
 )
 
-type indexParam struct {
-	PageNum int `form:"page,default=1"`
-}
-
-type detailParam struct {
-	PostID int `uri:"postID" binding:"required"`
-}
-
-type archiveParam struct {
-	Year  int `uri:"year" binding:"required"`
-	Month int `uri:"month" binding:"required"`
-}
-
-type tagParam struct {
-	TagID int `uri:"tag_id" binding:"required"`
-}
-type categoryParam struct {
-	CategoryID int `uri:"category_id" binding:"required"`
-}
-
 type baseCtxData struct {
 	MenuHome      bool
 	MenuArchive   bool
@@ -50,6 +31,7 @@ type baseCtxData struct {
 	CategoryCount int
 	TagCount      int
 	GinCtx        *gin.Context
+	Title         string
 }
 
 type indexContextData struct {
@@ -86,7 +68,7 @@ type categoryCtxData struct {
 }
 
 func BlogIndex(c *gin.Context) {
-	var args indexParam
+	var args forms.IndexParam
 	if err := c.BindQuery(&args); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -430,7 +412,7 @@ func baseCount(g *errgroup.Group) (int, int, int, error) {
 }
 
 func BlogDetail(c *gin.Context) {
-	var args detailParam
+	var args forms.DetailParam
 	var dataChan = make(chan map[string]any, 1)
 	if err := c.BindUri(&args); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -537,7 +519,7 @@ func Archives(c *gin.Context) {
 }
 
 func ArchivePosts(c *gin.Context) {
-	var args archiveParam
+	var args forms.ArchiveParam
 	if err := c.BindUri(&args); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -583,6 +565,7 @@ func ArchivePosts(c *gin.Context) {
 	archivePostCtx.CategoryCount = categoryCount
 	archivePostCtx.MenuArchive = true
 	archivePostCtx.GinCtx = c
+	archivePostCtx.Title = fmt.Sprintf("归档 - %d年%d月", year, month)
 	c.HTML(http.StatusOK, "index.html", archivePostCtx)
 }
 
@@ -621,18 +604,23 @@ func Tags(c *gin.Context) {
 }
 
 func TagPosts(c *gin.Context) {
-	var args tagParam
+	var args forms.TagParam
 	if err := c.BindUri(&args); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	tagID := args.TagID
 	var g errgroup.Group
-	dataChan := make(chan map[string]any, 1)
+	dataChan := make(chan map[string]any, 2)
 	execModel(&g, dataChan,
 		func() (map[string]any, error) {
 			ret, err := model.TagPosts(tagID)
 			return map[string]any{"tagPosts": ret}, err
+		})
+	execModel(&g, dataChan,
+		func() (map[string]any, error) {
+			ret, err := model.TagInfo(tagID)
+			return map[string]any{"tag": ret}, err
 		})
 	tagCount, categoryCount, totalCount, err := baseCount(&g)
 	if err != nil {
@@ -652,20 +640,22 @@ func TagPosts(c *gin.Context) {
 		}
 	}
 	blogPosts := dbData["tagPosts"].([]*model.BlogPost)
+	tagInfo := dbData["tag"].(*model.Tag)
 
 	for _, post := range blogPosts {
 		md := markdown.New(markdown.XHTMLOutput(true))
 		post.Excerpt = md.RenderToString([]byte(post.Excerpt))
 	}
 
-	archivePostCtx := DefaultIdxCtxData()
-	archivePostCtx.TagCount = tagCount
-	archivePostCtx.PostCount = totalCount
-	archivePostCtx.BlogPosts = blogPosts
-	archivePostCtx.CategoryCount = categoryCount
-	archivePostCtx.MenuTag = true
-	archivePostCtx.GinCtx = c
-	c.HTML(http.StatusOK, "index.html", archivePostCtx)
+	tagPostCtx := DefaultIdxCtxData()
+	tagPostCtx.TagCount = tagCount
+	tagPostCtx.PostCount = totalCount
+	tagPostCtx.BlogPosts = blogPosts
+	tagPostCtx.CategoryCount = categoryCount
+	tagPostCtx.MenuTag = true
+	tagPostCtx.GinCtx = c
+	tagPostCtx.Title = "标签 - " + tagInfo.TagName
+	c.HTML(http.StatusOK, "index.html", tagPostCtx)
 }
 
 func Categories(c *gin.Context) {
@@ -702,7 +692,7 @@ func Categories(c *gin.Context) {
 }
 
 func CategoryPosts(c *gin.Context) {
-	var args categoryParam
+	var args forms.CategoryParam
 	if err := c.BindUri(&args); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

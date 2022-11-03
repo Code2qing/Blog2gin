@@ -169,7 +169,7 @@ func ArchivePosts(year int, month int) ([]*BlogPost, error) {
 	if conf.Conf.Database.Type == "mysql" {
 		err = conf.DB.Where("YEAR(created_time)=? AND MONTH(created_time)=?", year, month).Joins("Category").Order("id desc").Find(&blogPosts).Error
 	} else {
-		err = conf.DB.Where("strftime('%Y', created_time)=? AND strftime('%m', created_time)=?", year, month).Joins("Category").Order("created_time desc").Find(&blogPosts).Error
+		err = conf.DB.Where("cast(strftime('%Y', created_time) as int)=? AND cast(strftime('%m', created_time) as int)=?", year, month).Joins("Category").Order("created_time desc").Find(&blogPosts).Error
 	}
 	if err != nil {
 		return nil, err
@@ -187,6 +187,16 @@ func TagList() ([]*TagCount, error) {
 		return nil, err
 	}
 	return tags, nil
+}
+
+func TagInfo(tagID int) (*Tag, error) {
+	var tag Tag
+	tag.TagID = uint(tagID)
+	err := conf.DB.Where(tag).First(&tag).Error
+	if err != nil {
+		return nil, err
+	}
+	return &tag, nil
 }
 
 func TagPosts(tagID int) ([]*BlogPost, error) {

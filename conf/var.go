@@ -6,6 +6,7 @@ var (
 	ConfigFile string = "conf/app.json"
 	Conf       Config
 	DB         *gorm.DB
+	Debug      bool
 )
 
 const (

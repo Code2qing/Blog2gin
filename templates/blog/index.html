@@ -1,4 +1,6 @@
-
+{{define "title"}}
+{{if .Title}} {{.Title}} {{else}} Smile2u {{end}}
+{{end}}
 {{define "content"}}
 <section id="posts" class="posts-expand">
   {{range $post := .BlogPosts}}
