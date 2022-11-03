@@ -40,13 +40,13 @@
         //异步提交表单
         $("#save").click(function(){
             $.ajaxSetup({contentType: "application/json; charset=utf-8"});
-            json = {"passwd": $("#passwd").val(), "post_id": {{.PostID}}, "md": $("#post_md").val(), "excerpt": $("#post_excert_md").val()}
+            json = {"passwd": $("#passwd").val(), "post_id": {{.BlogPost.ID}}, "md": $("#post_md").val(), "excerpt": $("#post_excert_md").val()}
             $.post("/editor/update_post",JSON.stringify(json),function(data){
 
                 if(data.msg=="ok")
                 {
                     alert ("保存成功");
-                    setTimeout(function(){ window.location.reload(); }, 100);
+                    window.location.href="/post/{{.BlogPost.ID}}"
                 } else {
                     alert (data.msg);
                     setTimeout(function(){ window.location.reload(); }, 100);

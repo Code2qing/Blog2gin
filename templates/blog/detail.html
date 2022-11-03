@@ -5,20 +5,20 @@
 {{ define "content" }}
 <div id="posts" class="posts-expand">
 	<article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
-	<link itemprop="mainEntityOfPage" href="//{{.GinCtx.Request.Host}}/post/{{.BlogPost.ID}}">
-	<span hidden="" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+		<link itemprop="mainEntityOfPage" href="//{{.GinCtx.Request.Host}}/post/{{.BlogPost.ID}}">
+		<span hidden="" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
 	<meta itemprop="name" content="Smile2U">
 	<meta itemprop="description" content="">
 	<meta itemprop="image" content="/uploads/m3.jpg">
 	</span>
-	<span hidden="" itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+		<span hidden="" itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
 	<meta itemprop="name" content="Smile2U">
 	</span>
-	<header class="post-header">
-	<h1 class="post-title" itemprop="name headline">
-		{{ .BlogPost.Title }}
-	</h1>
-	<div class="post-meta">
+		<header class="post-header">
+			<h1 class="post-title" itemprop="name headline">
+				{{ .BlogPost.Title }}
+			</h1>
+			<div class="post-meta">
 		<span class="post-time">
 		<span class="post-meta-item-icon">
 		<i class="fa fa-calendar-o"></i>
@@ -28,7 +28,7 @@
 {{ .BlogPost.CreatedTime.Format "2006-01-02 15:04:05" }}
 		</time>
 		</span>
-		<span class="post-category">
+				<span class="post-category">
 		<span class="post-meta-divider">|</span>
 		<span class="post-meta-item-icon">
 		<i class="fa fa-folder-o"></i>
@@ -40,16 +40,16 @@
 		</a>
 		</span>
 		</span>
-<!--		<span class="post-comments-count">-->
-<!--		<span class="post-meta-divider">|</span>-->
-<!--		<span class="post-meta-item-icon">-->
-<!--		<i class="fa fa-comment-o"></i>-->
-<!--		</span>-->
-<!--		<a href="#comments" itemprop="discussionUrl">-->
-<!--		<span class="post-comments-count disqus-comment-count" data-disqus-identifier="" itemprop="commentCount"> Comments</span>-->
-<!--		</a>-->
-<!--		</span>-->
-		<span id="/post/{{.BlogPost.ID}}" class="leancloud_visitors" data-flag-title="{{ .BlogPost.Title }}">
+				<!--		<span class="post-comments-count">-->
+				<!--		<span class="post-meta-divider">|</span>-->
+				<!--		<span class="post-meta-item-icon">-->
+				<!--		<i class="fa fa-comment-o"></i>-->
+				<!--		</span>-->
+				<!--		<a href="#comments" itemprop="discussionUrl">-->
+				<!--		<span class="post-comments-count disqus-comment-count" data-disqus-identifier="" itemprop="commentCount"> Comments</span>-->
+				<!--		</a>-->
+				<!--		</span>-->
+				<span id="/post/{{.BlogPost.ID}}" class="leancloud_visitors" data-flag-title="{{ .BlogPost.Title }}">
 		<span class="post-meta-divider">|</span>
 		<span class="post-meta-item-icon">
 		<i class="fa fa-eye"> &nbsp;{{.BlogPost.Views}}</i>
@@ -57,64 +57,134 @@
 		<span class="post-meta-item-text"> 阅读 </span>
 		<span class="leancloud-visitors-count"></span>
 		</span>
-	</div>
-	</header>
-	<div class="post-body" itemprop="articleBody">
-			{{ .BlogPost.Body|unescaped }}
-	</div>
-	<div>
-	</div>
-	<div>
-	</div>
-	<div>
-		<ul class="post-copyright">
-			<li class="post-copyright-author">
-			<strong>本文作者：</strong>
-			追梦少男
-			</li>
-			<li class="post-copyright-link">
-			<strong>本文链接：</strong>
-			<a href="//{{.GinCtx.Request.Host}}/post/{{.BlogPost.ID}}" title="{{.BlogPost.Title}}">{{.GinCtx.Request.Host}}/post/{{.BlogPost.ID}}</a>
-			</li>
-			<li class="post-copyright-license">
-			<strong>版权声明： </strong>
-本博客所有文章除特别声明外，均采用 
-			<a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！
-			</li>
-		</ul>
-	</div>
-	<footer class="post-footer">
-	<div class="post-tags">
-		{{ range $tag := .BlogPost.Tags }}
-		{{if $tag.TagID}}
-		<a href="/tag/{{$tag.TagID}}" rel="tag"># {{$tag.TagName}}</a>
-		{{end}}
-		{{ end }}
-		
-		
-	</div>
-<!--	<div class="post-nav">-->
-<!--		<div class="post-nav-next post-nav-item">-->
-<!--		-->
-<!--			-->
-<!--			<a href="" rel="next" title="">-->
-<!--			<i class="fa fa-chevron-left"></i>-->
-<!--			</a>-->
-<!--			-->
-<!--		</div>-->
-<!--		<span class="post-nav-divider"></span>-->
-<!--		<div class="post-nav-prev post-nav-item">-->
-<!--			-->
-<!--			<a href="" rel="prev" title="">-->
-<!--                 <i class="fa fa-chevron-right"></i>-->
-<!--            </a>-->
-<!--			-->
-<!--		</div>-->
-<!--		-->
-<!--	</div>-->
-	</footer>
+			</div>
+		</header>
+		<div class="post-body" itemprop="articleBody" id="post-body">
+		</div>
+		<div>
+		</div>
+		<div>
+		</div>
+		<div>
+			<ul class="post-copyright">
+				<li class="post-copyright-author">
+					<strong>本文作者：</strong>
+					追梦少男
+				</li>
+				<li class="post-copyright-link">
+					<strong>本文链接：</strong>
+					<a href="//{{.GinCtx.Request.Host}}/post/{{.BlogPost.ID}}" title="{{.BlogPost.Title}}">{{.GinCtx.Request.Host}}/post/{{.BlogPost.ID}}</a>
+				</li>
+				<li class="post-copyright-license">
+					<strong>版权声明： </strong>
+					本博客所有文章除特别声明外，均采用
+					<a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！
+				</li>
+			</ul>
+		</div>
+		<footer class="post-footer">
+			<div class="post-tags">
+				{{ range $tag := .BlogPost.Tags }}
+				{{if $tag.TagID}}
+				<a href="/tag/{{$tag.TagID}}" rel="tag"># {{$tag.TagName}}</a>
+				{{end}}
+				{{ end }}
+
+
+			</div>
+			<!--	<div class="post-nav">-->
+			<!--		<div class="post-nav-next post-nav-item">-->
+			<!--		-->
+			<!--			-->
+			<!--			<a href="" rel="next" title="">-->
+			<!--			<i class="fa fa-chevron-left"></i>-->
+			<!--			</a>-->
+			<!--			-->
+			<!--		</div>-->
+			<!--		<span class="post-nav-divider"></span>-->
+			<!--		<div class="post-nav-prev post-nav-item">-->
+			<!--			-->
+			<!--			<a href="" rel="prev" title="">-->
+			<!--                 <i class="fa fa-chevron-right"></i>-->
+			<!--            </a>-->
+			<!--			-->
+			<!--		</div>-->
+			<!--		-->
+			<!--	</div>-->
+		</footer>
 	</article>
 	<div class="post-spread">
 	</div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+	var renderer = new marked.Renderer()
+	renderer.heading = function(text, level, raw) {
+		var anchor = tocObj.add(text, level)
+		return `<a id=${anchor} class="anchor-fix"></a><h${level}>${text}</h${level}>\n`
+	}
+	marked.setOptions({
+		renderer: renderer
+	})
+	const tocObj = {
+		add: function(text, level) {
+			var anchor = `#toc${level}${++this.index}`;
+			this.toc.push({ anchor: anchor, level: level, text: text });
+			return anchor;
+		},
+		// 使用堆栈的方式处理嵌套的ul,li，level即ul的嵌套层次，1是最外层
+		// <ul>
+		//   <li></li>
+		//   <ul>
+		//     <li></li>
+		//   </ul>
+		//   <li></li>
+		// </ul>
+		toHTML: function() {
+			let levelStack = [];
+			let result = '';
+			const addStartUL = () => { result += '<ul>'; };
+			const addEndUL = () => { result += '</ul>\n'; };
+			const addLI = (anchor, text) => { result += '<li><a href="#'+anchor+'">'+text+'<a></li>\n'; };
+
+			this.toc.forEach(function (item) {
+				let levelIndex = levelStack.indexOf(item.level);
+				// 没有找到相应level的ul标签，则将li放入新增的ul中
+				if (levelIndex === -1) {
+					levelStack.unshift(item.level);
+					addStartUL();
+					addLI(item.anchor, item.text);
+				} // 找到了相应level的ul标签，并且在栈顶的位置则直接将li放在此ul下
+				else if (levelIndex === 0) {
+					addLI(item.anchor, item.text);
+				} // 找到了相应level的ul标签，但是不在栈顶位置，需要将之前的所有level出栈并且打上闭合标签，最后新增li
+				else {
+					while (levelIndex--) {
+						levelStack.shift();
+						addEndUL();
+					}
+					addLI(item.anchor, item.text);
+				}
+			});
+			// 如果栈中还有level，全部出栈打上闭合标签
+			while(levelStack.length) {
+				levelStack.shift();
+				addEndUL();
+			}
+			// 清理先前数据供下次使用
+			this.toc = [];
+			this.index = 0;
+			return result;
+		},
+		toc: [],
+		index: 0
+	}
+	html = marked.parse("{{ .BlogPost.Body|unescaped }}")
+	// html = marked.parse(document.getElementById("post-body").textContent)
+	// console.log(document.getElementById("post-body").textContent)
+	// console.log(document.getElementById("post-body").innerText)
+	// console.log(document.getElementById("post-body").innerHTML)
+	tocHTML = tocObj.toHTML()
+	document.getElementById('post-body').innerHTML =  tocHTML + "\n" + html
+</script>
 {{ end }}

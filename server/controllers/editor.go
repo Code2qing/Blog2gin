@@ -30,7 +30,7 @@ func Editor(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.HTML(200, "edit_post.html", gin.H{"BlogPost": blogPost, "PostID": postID})
+	c.HTML(200, "edit_post.html", gin.H{"BlogPost": blogPost})
 }
 
 func UpdateMd(c *gin.Context) {

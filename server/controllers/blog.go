@@ -4,18 +4,11 @@ import (
 	"Blog2Gin/conf"
 	"Blog2Gin/model"
 	"Blog2Gin/server/forms"
-	"bytes"
 	"fmt"
-	toc "github.com/abhinav/goldmark-toc"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/extension"
-	"github.com/yuin/goldmark/parser"
-	"github.com/yuin/goldmark/util"
 	"gitlab.com/golang-commonmark/markdown"
 	"golang.org/x/sync/errgroup"
-	"gorm.io/gorm"
 	"net/http"
 	"runtime"
 	"strings"
@@ -448,31 +441,31 @@ func BlogDetail(c *gin.Context) {
 
 	//md := markdown.New(markdown.XHTMLOutput(true))
 	//blogPost.Body = md.RenderToString([]byte(blogPost.Body))
-	start := time.Now()
-	md := goldmark.New(
-		// 支持 GFM
-		goldmark.WithExtensions(extension.GFM, extension.CJK),
-	)
-	md.Parser().AddOptions(
-		parser.WithAutoHeadingID(),
-		parser.WithASTTransformers(
-			util.Prioritized(&toc.Transformer{
-				Title: "目录",
-			}, 100),
-		),
-	)
-	var buf bytes.Buffer
-	if err := md.Convert([]byte(blogPost.Body), &buf); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "markdown fail!"})
-		return
-	}
-	blogPost.Views += 1
-	err = conf.DB.Model(&model.BlogPost{ID: uint(postID)}).Update("views", gorm.Expr("views+1")).Error
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-	blogPost.Body = buf.String()
-	log.Info("exec time: ", time.Since(start))
+	//start := time.Now()
+	//md := goldmark.New(
+	//	// 支持 GFM
+	//	goldmark.WithExtensions(extension.GFM, extension.CJK),
+	//)
+	//md.Parser().AddOptions(
+	//	parser.WithAutoHeadingID(),
+	//	parser.WithASTTransformers(
+	//		util.Prioritized(&toc.Transformer{
+	//			Title: "目录",
+	//		}, 100),
+	//	),
+	//)
+	//var buf bytes.Buffer
+	//if err := md.Convert([]byte(blogPost.Body), &buf); err != nil {
+	//	c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "markdown fail!"})
+	//	return
+	//}
+	//blogPost.Views += 1
+	//err = conf.DB.Model(&model.BlogPost{ID: uint(postID)}).Update("views", gorm.Expr("views+1")).Error
+	//if err != nil {
+	//	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	//}
+	//blogPost.Body = buf.String()
+	//log.Info("exec time: ", time.Since(start))
 	detailCtx := DefaultDetailCtxData()
 	detailCtx.GinCtx = c
 	detailCtx.BlogPost = blogPost
