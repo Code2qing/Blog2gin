@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
+	"gorm.io/gorm"
 	"net/http"
 	"time"
 )
@@ -263,13 +264,13 @@ func BlogDetail(c *gin.Context) {
 	//	c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "markdown fail!"})
 	//	return
 	//}
-	//blogPost.Views += 1
-	//err = conf.DB.Model(&model.BlogPost{ID: uint(postID)}).Update("views", gorm.Expr("views+1")).Error
-	//if err != nil {
-	//	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	//}
 	//blogPost.Body = buf.String()
 	//log.Info("exec time: ", time.Since(start))
+	blogPost.Views += 1
+	err = conf.DB.Model(&model.BlogPost{ID: uint(postID)}).Update("views", gorm.Expr("views+1")).Error
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
 	detailCtx := common.DefaultDetailCtxData()
 	detailCtx.GinCtx = c
 	detailCtx.BlogPost = blogPost
