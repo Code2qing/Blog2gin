@@ -28,6 +28,7 @@ func loadTemplates(templatesDir string) multitemplate.Renderer {
 			files := append(layoutCopy, include)
 			r.AddFromFilesFuncs(filepath.Base(include), template.FuncMap{
 				"unescaped": unescaped,
+				"incr":      incr,
 			}, files...)
 		}
 	}
@@ -55,6 +56,8 @@ func loadTemplates(templatesDir string) multitemplate.Renderer {
 }
 
 func unescaped(x string) interface{} { return template.HTML(x) }
+
+func incr(i int) int { return i + 1 }
 
 func InitTemplate(router *gin.Engine) {
 	router.HTMLRender = loadTemplates("templates")

@@ -3,6 +3,7 @@
 {{end}}
 {{define "content"}}
 <section id="posts" class="posts-expand">
+  {{$i := 0}}
   {{range $post := .BlogPosts}}
 <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
 <link itemprop="mainEntityOfPage" href="">
@@ -62,7 +63,12 @@
 </div>
 </header>
 <div class="post-body" itemprop="articleBody">
-  <p>{{$post.Excerpt|unescaped}}</p>
+  <p id="post-body-{{$i}}"></p>
+  <script>
+    post_html = marked.parse("{{$post.Excerpt|unescaped}}")
+    document.getElementById("post-body-{{$i}}").innerHTML = post_html
+  </script>
+  {{$i = incr $i}}
   <!--noindex-->
   <div class="post-button text-center">
     <a class="btn" href="/post/{{$post.ID}}" rel="contents">
