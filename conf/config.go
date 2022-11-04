@@ -17,3 +17,21 @@ type Config struct {
 	Database     Database `json:"database"`
 	UpdatePasswd string   `json:"update_passwd"`
 }
+
+func DefaultConfig() Config {
+	return Config{
+		Address: "0.0.0.0",
+		Port:    8000,
+		Database: Database{
+			Type:        "mysql",
+			User:        "root",
+			Password:    "123456",
+			Host:        "localhost",
+			Port:        3306,
+			Name:        "blog",
+			DBFile:      "data/data.db",
+			TablePrefix: "",
+		},
+		UpdatePasswd: "123456",
+	}
+}

@@ -13,7 +13,7 @@ import (
 )
 
 func Init() {
-	flag.StringVar(&conf.ConfigFile, "conf", "conf/app.json", "config file")
+	flag.StringVar(&conf.ConfigFile, "conf", "data/app.json", "config file")
 	flag.BoolVar(&conf.Debug, "debug", false, "debug")
 	flag.Parse()
 	bootstrap.InitConf()

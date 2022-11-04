@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"Blog2Gin/conf"
+	"Blog2Gin/pkg/utils"
 	"encoding/json"
 	"io/ioutil"
 
@@ -9,13 +10,25 @@ import (
 )
 
 func InitConf() {
-	config, err := ioutil.ReadFile(conf.ConfigFile)
-	if err != nil {
-		log.Fatalf("reading config file error: %s", err.Error())
+	if !utils.Exists(conf.ConfigFile) {
+		log.Infof("config file not exists, creating default config file")
+		_, err := utils.CreatNestedFile(conf.ConfigFile)
+		if err != nil {
+			log.Fatalf("failed to create config file")
+		}
+		conf.Conf = conf.DefaultConfig()
+		if !utils.WriteToJson(conf.ConfigFile, conf.Conf) {
+			log.Fatalf("failed to create default config file")
+		}
+	} else {
+		config, err := ioutil.ReadFile(conf.ConfigFile)
+		if err != nil {
+			log.Fatalf("reading config file error: %s", err.Error())
+		}
+		err = json.Unmarshal(config, &conf.Conf)
+		if err != nil {
+			log.Fatalf("load config error: %s", err.Error())
+		}
+		log.Infof("config: %+v", conf.Conf)
 	}
-	err = json.Unmarshal(config, &conf.Conf)
-	if err != nil {
-		log.Fatalf("load config error: %s", err.Error())
-	}
-	log.Infof("config: %+v", conf.Conf)
 }
