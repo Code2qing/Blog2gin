@@ -1,22 +1,38 @@
 package templates
 
 import (
+	"embed"
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
 	"html/template"
+	"io/fs"
 	"path/filepath"
 )
 
-func loadTemplates(templatesDir string) multitemplate.Renderer {
-	r := multitemplate.NewRenderer()
+//go:embed *
+var tmplFS embed.FS
 
+type multiRender struct {
+	multitemplate.Render
+}
+
+func (r multiRender) AddFromFsFilesFuncs(name string, funcMap template.FuncMap, fs fs.FS, files ...string) *template.Template {
+	tname := filepath.Base(files[0])
+	tmpl := template.Must(template.New(tname).Funcs(funcMap).ParseFS(fs, files...))
+	r.Add(name, tmpl)
+	return tmpl
+}
+
+func loadTemplates() multitemplate.Renderer {
+	//r := multitemplate.NewRenderer()
+	r := multiRender{Render: make(multitemplate.Render)}
 	{
-		blogLayouts, err := filepath.Glob(templatesDir + "/blog/base/*.html")
+		blogLayouts, err := fs.Glob(tmplFS, "blog/base/*.html")
 		if err != nil {
 			panic(err.Error())
 		}
 
-		blogIncludes, err := filepath.Glob(templatesDir + "/blog/*.html")
+		blogIncludes, err := fs.Glob(tmplFS, "blog/*.html")
 		if err != nil {
 			panic(err.Error())
 		}
@@ -26,19 +42,19 @@ func loadTemplates(templatesDir string) multitemplate.Renderer {
 			layoutCopy := make([]string, len(blogLayouts))
 			copy(layoutCopy, blogLayouts)
 			files := append(layoutCopy, include)
-			r.AddFromFilesFuncs(filepath.Base(include), template.FuncMap{
+			r.AddFromFsFilesFuncs(filepath.Base(include), template.FuncMap{
 				"unescaped": unescaped,
 				"incr":      incr,
-			}, files...)
+			}, tmplFS, files...)
 		}
 	}
 
 	{
-		editorLayouts, err := filepath.Glob(templatesDir + "/editor/base/*.html")
+		editorLayouts, err := fs.Glob(tmplFS, "editor/base/*.html")
 		if err != nil {
 			panic(err.Error())
 		}
-		editorIncludes, err := filepath.Glob(templatesDir + "/editor/*.html")
+		editorIncludes, err := fs.Glob(tmplFS, "editor/*.html")
 		if err != nil {
 			panic(err.Error())
 		}
@@ -46,9 +62,9 @@ func loadTemplates(templatesDir string) multitemplate.Renderer {
 			layoutCopy := make([]string, len(editorLayouts))
 			copy(layoutCopy, editorLayouts)
 			files := append(layoutCopy, include)
-			r.AddFromFilesFuncs(filepath.Base(include), template.FuncMap{
+			r.AddFromFsFilesFuncs(filepath.Base(include), template.FuncMap{
 				"unescaped": unescaped,
-			}, files...)
+			}, tmplFS, files...)
 		}
 	}
 
@@ -60,5 +76,5 @@ func unescaped(x string) interface{} { return template.HTML(x) }
 func incr(i int) int { return i + 1 }
 
 func InitTemplate(router *gin.Engine) {
-	router.HTMLRender = loadTemplates("templates")
+	router.HTMLRender = loadTemplates()
 }

@@ -15,7 +15,6 @@ FROM alpine:latest
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && cat /etc/apk/repositories
 WORKDIR /app
 RUN apk add --no-cache tzdata curl
-COPY ./ .
 COPY --from=builder /Blog2gin /app/Blog2gin
 
 RUN chmod +x /app/Blog2gin
