@@ -4,6 +4,7 @@ import (
 	"embed"
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/render"
 	"html/template"
 	"io/fs"
 	"path/filepath"
@@ -12,20 +13,30 @@ import (
 //go:embed *
 var tmplFS embed.FS
 
-type multiRender struct {
+type CustomRenderer interface {
+	render.HTMLRender
+	multitemplate.Renderer
+	AddFromFsFilesFuncs(name string, funcMap template.FuncMap, fs fs.FS, files ...string) *template.Template
+}
+
+type customRender struct {
 	multitemplate.Render
 }
 
-func (r multiRender) AddFromFsFilesFuncs(name string, funcMap template.FuncMap, fs fs.FS, files ...string) *template.Template {
+func (r customRender) AddFromFsFilesFuncs(name string, funcMap template.FuncMap, fs fs.FS, files ...string) *template.Template {
 	tname := filepath.Base(files[0])
 	tmpl := template.Must(template.New(tname).Funcs(funcMap).ParseFS(fs, files...))
 	r.Add(name, tmpl)
 	return tmpl
 }
 
-func loadTemplates() multitemplate.Renderer {
+func NewCustomRender() CustomRenderer {
+	return customRender{Render: make(multitemplate.Render)}
+}
+
+func loadTemplates() CustomRenderer {
 	//r := multitemplate.NewRenderer()
-	r := multiRender{Render: make(multitemplate.Render)}
+	r := NewCustomRender()
 	{
 		blogLayouts, err := fs.Glob(tmplFS, "blog/base/*.html")
 		if err != nil {

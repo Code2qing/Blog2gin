@@ -1,0 +1,10 @@
+services:
+  blog2gin:
+    build: ./
+    ports:
+      - 80:8000
+    volumes:
+      - data:/app/data
+
+volumes:
+  data:
