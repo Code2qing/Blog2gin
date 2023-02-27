@@ -22,7 +22,7 @@ func InitRouter(r *gin.Engine) {
 	// r.Static("/static", "static")
 	//r.StaticFS("/static", http.FS(static.StaticFS))
 	r.GET("/static/*filepath", func(c *gin.Context) {
-		c.Header("Cache-Control", "private, max-age=86400")
+		c.Header("Cache-Control", "public, max-age=86400")
 		c.FileFromFS(c.Param("filepath"), http.FS(static.StaticFS))
 	})
 }
